@@ -246,10 +246,6 @@
     if (neck && waist) {
        moveOneJoint(neck, angle1, angle2);
 	   //output("received :" + angle1 + ", " + angle2 +"! ");
-	   //angle1+=1.0;
-	   //angle2+=1.0;
-      //moveJoint(mousecoords, neck, 50);
-      //moveJoint(mousecoords, waist, 30);
     }
   });
 
