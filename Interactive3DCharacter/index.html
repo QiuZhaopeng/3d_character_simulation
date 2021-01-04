@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Interactive 3D Character with Three.js | Codrops</title>
+		<meta name="description" content="Demo for the tutorial on how to add an interactive 3D character to a website." />
+		<meta name="keywords" content="3d model, three.js, tutorial, interactive, website, web development" />
+		<meta name="author" content="Codrops" />
+		<link rel="shortcut icon" href="favicon.ico">
+		<link rel="stylesheet" type="text/css" href="css/base.css" />
+		<script>document.documentElement.className="js";var supportsCssVars=function(){var e,t=document.createElement("style");return t.innerHTML="root: { --tmp-var: bold; }",document.head.appendChild(t),e=!!(window.CSS&&window.CSS.supports&&window.CSS.supports("font-weight","var(--tmp-var)")),t.parentNode.removeChild(t),e};supportsCssVars()||alert("Please view this demo in a modern browser that supports CSS Variables.");</script>
+	</head>
+	<body>
+		<div class="loading" id="js-loader">
+			<div class="loader"></div>
+		</div>
+		<div class="wrapper">
+		    <!-- The canvas element is used to draw the 3D scene -->
+			<canvas id="c"></canvas>
+		</div>
+		<div class="frame">
+			<h1 class="frame__title">Interactive 3D Character with Three.js</h1>
+			<div class="frame__links">
+				<h6 style="font-size:9px;color:red;" id="debug-area"></h6> </div> </div>
+			</div>
+		</div>
+		<!-- The main Three.js file -->
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/108/three.min.js'></script>
+		<!-- This brings in the ability to load custom 3D objects in the .gltf file format. Blender allows the ability to export to this format out the box -->
+		<script src='https://cdn.jsdelivr.net/gh/mrdoob/Three.js@r92/examples/js/loaders/GLTFLoader.js'></script>
+		<!-- partial -->
+
+
+		<script  type="text/javascript" >
+		    var angle1 = 0.0;
+			var angle2 = 0.0
+			
+			const qEvent = new Event('qiu');
+			
+			/* for debug */    
+			function output(s)
+			{
+				var out = document.getElementById("debug-area");
+				out.innerText += s;
+			}
+			
+			output("Start running")
+			
+			
+
+
+var msg_ready = false;
+var msg_reading = false;  // True: package head 0xAA is received, but 0x7f has not yet been received
+var msg_data_buffer = [];
+var msg_lenth = 0;
+
+var cable_healthy = true;
+
+function update_posture()
+{
+
+}
+
+
+function processMsg(v)
+{		
+	if (v[0] == 170) // detect the beginning byte of a message: 0xAA
+	{
+		// data are sent in little endian, 
+		// v.buffer is a byte-array and Int16Array(v.buffer, 8, 1) means that it parses from the 8th byte on to get ONE Int16 number
+		if ( (v[1] == 0x01) && (v[2] == 0x53) ) // 01 52
+		{
+			angle1 = new Int16Array(v.buffer, 8, 1)[0];
+			angle2 = new Int16Array(v.buffer, 10, 1)[0];
+			var temp3 = new Int16Array(v.buffer, 12, 1)[0];
+			document.dispatchEvent(qEvent);
+
+		}
+		else 
+		{
+		}
+	 }
+}
+		
+
+	var ws = require("nodejs-websocket");
+	var clients =  new Array();
+	output("开始建立连接... ");
+	var count = 0;
+	var data = new Buffer.alloc(0);
+	var server = ws.createServer(function(conn){
+	
+	conn.id = count;
+	count += 1;
+	clients["conn"+count]  = conn;
+
+		conn.on("text", function (str) {
+			output("Received " + str + "! " )
+			var typeId = str.charAt(0);			
+			conn.sendText('Success!');
+		})
+		conn.on("close", function (code, reason) {
+			output("Connection closed!")
+			//clients.delete(conn);
+		});
+		
+		conn.on("binary", function (inStream) {
+		
+			inStream.on("readable", function () {
+				var newData = inStream.read();
+				
+				if (newData)
+					data = Buffer.concat([data, newData], data.length + newData.length);
+			});
+			
+			inStream.on("end", function () {
+
+				if(data){
+				var t = '', v = new Uint8Array(data);
+
+				for (var i = 0; i < v.length; i++)
+				{
+					// packet head 0xAA reached, now start reading the data flow
+					if  ((!msg_reading ) &&(v[i] == 0xaa)){
+						msg_reading = true;
+					}
+					
+					
+					if(msg_reading){
+						
+						if (msg_data_buffer.length == 8) {
+							msg_lenth =  msg_data_buffer[5]*16 + msg_data_buffer[4]; // parsing the data length (bytes size)							
+						}
+						
+						// received the end of packet, and the length is correct 
+						if ((v[i] == 127 ) && (msg_data_buffer.length == (msg_lenth + 10)))  // 10 extra bytes contained in this package for : length, scope, checksum, msg-id 
+						{							
+							var msg = new Uint8Array(msg_data_buffer);
+							processMsg(msg);
+							msg_data_buffer = [];
+							msg_reading = false;
+							msg_lenth = 0;
+						} else if (msg_data_buffer.length == (msg_lenth + 10))
+						{
+							msg_data_buffer = [];
+							msg_reading = false;
+							msg_lenth = 0;
+							output("Message length error!");
+						}
+						else{
+							msg_data_buffer.push(v[i]);
+						}
+					}
+				}
+									
+			}else{
+				
+			};
+			data = new Buffer.alloc(0);
+			conn.sendText('Binary Received!');
+			});
+			
+			
+		});
+		conn.on("message", function (code, reason) {
+			output("message! " )
+		});
+		conn.on("error", function (code, reason) {
+			output("Error occurs!")
+		});
+	}).listen(9999)
+	output("Server is ready! ");
+
+		</script>
+		<script  src="js/script.js"></script>
+	</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "name": "Interactive3DCharacter",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "test",
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "none"
+  },
+  "keywords": [
+    "echarts"
+  ],
+  "author": "qiuzhp",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "6.0.12",
+    "electron-packager": "^12.1.2",
+    "electron-winstaller": "^2.7.0"
+  },
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "nodejs-websocket": "^1.7.1",
+    "socket.io": "^2.1.1"
+  }
+}
