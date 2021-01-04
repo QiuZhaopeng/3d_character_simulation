@@ -3,6 +3,7 @@
 ## Execution
 
 Run the following cmd:
+
     npm install
 	npm start
 	
@@ -10,12 +11,14 @@ Run the following cmd:
 ## Control singal sending 
 
 
-One can write his own program to send angle via websockt. Angle data (two int16) to be sent should be written into msg_send_posture[8:9] and msg_send_posture[10:11]. Example code:
-	var wsUrl = "ws://localhost:9999";
+One can write his own program to send angle via websockt. Angle data (two int16) to be sent should be written into msg_send_posture[8:9] and msg_send_posture[10:11]. 
 
+Example code:
+	
+	
+	var wsUrl = "ws://localhost:9999";
 	websocket = new WebSocket(wsUrl);
 	var msg_send_posture  =  new Uint8Array([0xAA,  0x01,0x53,  0x01,  0x04,0x00,0x00,0x00,   0x01,0x00, 0x00,0x00,  0x00,0x00,   0x7F];
-
 	websocket.send(msg_send_posture);
   
 
